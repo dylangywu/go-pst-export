@@ -12,12 +12,9 @@ $ git clone https://github.com/mooijtech/go-pst-export
 # Change directory
 $ cd go-pst-export
 
+# Show help
+$ go run cmd/export.go -help
+
 # Export all messages to EML
-$ go run cmd/export --strategy eml
-```
-
-### Library
-
-```go
-
+$ go run cmd/export.go -strategy eml
 ```
