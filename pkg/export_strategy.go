@@ -111,7 +111,7 @@ func processSubFolders(pstFile *pst.File, folder pst.Folder, formatType string, 
 				err := exportStrategy.Export(pstFile, message, messageIndex, subFolder, formatType, encryptionType, exportContext)
 
 				if err != nil {
-					Logger.Fatalf("Failed to export message (skipping): %s", err)
+					Logger.Errorf("Failed to export message (skipping): %s", err)
 				}
 			}
 		}
