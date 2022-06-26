@@ -1,0 +1,4 @@
+.idea/
+data/*
+!data/.keep
+!data/enron.pst
