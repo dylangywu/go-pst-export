@@ -11,7 +11,7 @@ import (
 // ExportStrategy defines the interface all export strategies implement.
 type ExportStrategy interface {
 	Name() string
-	Export(pstFile *pst.File, message pst.Message, messageIndex int, folder pst.Folder, formatType string, encryptionType string, exportContext ExportContext) error
+	Export(pstFile *pst.File, pstMessage pst.Message, pstMessageIndex int, pstFolder pst.Folder, pstFormatType string, pstEncryptionType string, exportContext ExportContext) error
 }
 
 // GetAllExportStrategies returns all export strategies.

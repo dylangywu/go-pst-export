@@ -28,43 +28,55 @@ func (exportStrategyEML ExportStrategyEML) Name() string {
 	return "eml"
 }
 
-func (exportStrategyEML ExportStrategyEML) Export(pstFile *pst.File, message pst.Message, messageIndex int, folder pst.Folder, formatType string, encryptionType string, exportContext ExportContext) error {
-	outputDirectory := filepath.Join(exportContext.OutputDirectory, folder.DisplayName)
+func (exportStrategyEML ExportStrategyEML) Export(pstFile *pst.File, pstMessage pst.Message, pstMessageIndex int, pstFolder pst.Folder, pstFormatType string, pstEncryptionType string, exportContext ExportContext) error {
+	outputDirectory := filepath.Join(exportContext.OutputDirectory, pstFolder.DisplayName)
 
 	if err := os.MkdirAll(outputDirectory, 0755); err != nil {
 		return err
 	}
 
-	return exportToEML(pstFile, message, messageIndex, formatType, encryptionType, outputDirectory)
-}
-
-func exportToEML(pstFile *pst.File, pstMessage pst.Message, messageIndex int, formatType string, encryptionType string, outputDirectory string) error {
-	outputFile, err := os.Create(filepath.Join(outputDirectory, strconv.Itoa(messageIndex) + ".eml"))
+	outputFile, err := os.Create(filepath.Join(outputDirectory, strconv.Itoa(pstMessageIndex) + ".eml"))
 
 	if err != nil {
 		return err
 	}
 
-	header, err := pstMessage.GetHeaders(pstFile, formatType, encryptionType)
+	header, err := pstMessage.GetHeaders(pstFile, pstFormatType, pstEncryptionType)
 
 	if err != nil {
 		return err
 	}
 
 	var body string
+	isHTMLBody := false
 
-	pstBodyHTML, err := pstMessage.GetBodyHTML(pstFile, formatType, encryptionType)
-
-	if err == nil {
-		body = pstBodyHTML
-	} else {
-		pstBody, err := pstMessage.GetBody(pstFile, formatType, encryptionType)
+	if exportContext.IsOnlyPlaintextBody {
+		pstBody, err := pstMessage.GetBody(pstFile, pstFormatType, pstEncryptionType)
 
 		if err == nil {
 			body = pstBody
 		} else {
-			Logger.Error("Failed to get body from message (maybe the body is RTF?).")
+			Logger.Errorf("Failed to get plaintext body from message: %s", err)
 		}
+	} else {
+		pstBodyHTML, err := pstMessage.GetBodyHTML(pstFile, pstFormatType, pstEncryptionType)
+
+		if err == nil {
+			body = pstBodyHTML
+			isHTMLBody = true
+		} else {
+			pstBody, err := pstMessage.GetBody(pstFile, pstFormatType, pstEncryptionType)
+
+			if err == nil {
+				body = pstBody
+			} else {
+				Logger.Errorf("Failed to get body from message: %s", err)
+			}
+		}
+	}
+
+	if len(body) == 0 {
+		Logger.Errorf("Empty message body for message: #%d", pstMessageIndex)
 	}
 
 	emlMessage, err := message.Read(strings.NewReader(header))
@@ -88,7 +100,7 @@ func exportToEML(pstFile *pst.File, pstMessage pst.Message, messageIndex int, fo
 		return err
 	}
 
-	pstMessageAttachments, err := pstMessage.GetAttachments(pstFile, formatType, encryptionType)
+	pstMessageAttachments, err := pstMessage.GetAttachments(pstFile, pstFormatType, pstEncryptionType)
 
 	if err != nil {
 		Logger.Warnf("Failed to get message attachments: %s", err)
@@ -107,31 +119,31 @@ func exportToEML(pstFile *pst.File, pstMessage pst.Message, messageIndex int, fo
 				}
 			}
 
-			attachmentInputStream, err := attachment.GetInputStream(pstFile, formatType, encryptionType)
+			attachmentInputStream, err := attachment.GetInputStream(pstFile, pstFormatType, pstEncryptionType)
 
 			if err != nil {
-				Logger.Warnf("Failed to get attachment input stream, skipping...")
+				Logger.Warnf("Failed to get attachment input stream, skipping: %s", err)
 				continue
 			}
 
 			attachmentData, err := attachmentInputStream.ReadCompletely()
 
 			if err != nil {
-				Logger.Warnf("Failed to read attachment input stream, skipping...")
+				Logger.Warnf("Failed to read attachment input stream, skipping: %s", err)
 				continue
 			}
 
 			attachmentWriter, err := emlWriter.CreateAttachment(attachmentHeader)
 
 			if err != nil {
-				Logger.Warnf("Failed to create attachment, skipping...")
+				Logger.Warnf("Failed to create attachment, skipping: %s", err)
 				continue
 			}
 
 			_, err = io.Copy(attachmentWriter, bytes.NewReader(attachmentData))
 
 			if err != nil {
-				Logger.Warnf("Failed to copy attachment data, skipping...")
+				Logger.Warnf("Failed to copy attachment data, skipping: %s", err)
 				continue
 			}
 
@@ -149,7 +161,11 @@ func exportToEML(pstFile *pst.File, pstMessage pst.Message, messageIndex int, fo
 
 	var inlineHeader mail.InlineHeader
 
-	inlineHeader.Set("Content-Type", "text/plain")
+	if isHTMLBody {
+		inlineHeader.Set("Content-Type", "text/html")
+	} else {
+		inlineHeader.Set("Content-Type", "text/plain")
+	}
 
 	bodyWriter, err := inlineWriter.CreatePart(inlineHeader)
 
@@ -163,8 +179,7 @@ func exportToEML(pstFile *pst.File, pstMessage pst.Message, messageIndex int, fo
 		return err
 	}
 
-	return outputFile.Close()
-}
+	return outputFile.Close()}
 
 func fixHeaderEncodingIssues(header string, emlError error, maxRetries int) (*message.Entity, error) {
 	if maxRetries <= 0 {

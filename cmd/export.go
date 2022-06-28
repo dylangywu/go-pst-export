@@ -12,6 +12,7 @@ func main() {
 	inputFile := flag.String("input", "data/enron.pst", "input PST file to use")
 	outputDirectory := flag.String("output", "data", "sets the output directory")
 	exportStrategy := flag.String("strategy", "eml", "sets the export strategy")
+	isOnlyPlaintextBody := flag.Bool("plaintext", false, "prefer plaintext body over HTML")
 
 	flag.Parse()
 
@@ -32,6 +33,7 @@ func main() {
 		err = pstexport.ExecuteExportStrategy(strategy, pstexport.ExportContext{
 			InputFile: *inputFile,
 			OutputDirectory: *outputDirectory,
+			IsOnlyPlaintextBody: *isOnlyPlaintextBody,
 		})
 
 		if err != nil {

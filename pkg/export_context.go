@@ -7,4 +7,5 @@ package pstexport
 type ExportContext struct {
 	InputFile string
 	OutputDirectory string
+	IsOnlyPlaintextBody bool
 }
