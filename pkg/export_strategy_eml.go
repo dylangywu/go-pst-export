@@ -179,7 +179,8 @@ func (exportStrategyEML ExportStrategyEML) Export(pstFile *pst.File, pstMessage 
 		return err
 	}
 
-	return outputFile.Close()}
+	return outputFile.Close()
+}
 
 func fixHeaderEncodingIssues(header string, emlError error, maxRetries int) (*message.Entity, error) {
 	if maxRetries <= 0 {
