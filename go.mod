@@ -1,6 +1,6 @@
 module github.com/mooijtech/go-pst-export
 
-go 1.18
+go 1.19
 
 require (
 	github.com/emersion/go-message v0.16.0
