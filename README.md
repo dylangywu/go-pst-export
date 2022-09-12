@@ -21,7 +21,7 @@ $ go run cmd/export.go -strategy eml
 
 ## License
 
-go-pst-export is open-source under the GNU Affero General Public License Version 3 - AGPLv3. Fundamentally, this means that you are free to use go-pst for your project, as long as you don't modify go-pst. If you do, you have to make the modifications public.
+go-pst-export is open-source under the GNU Affero General Public License Version 3 - AGPLv3. Fundamentally, this means that you are free to use go-pst for your project, as long as you don't modify go-pst-export. If you do, you have to make the modifications public.
 
 ## Contact
 
