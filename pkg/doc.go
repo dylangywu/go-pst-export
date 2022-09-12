@@ -15,9 +15,5 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Package pstexport is a command-line interface and library for exporting PST files (using go-pst).
 package pstexport
-
-import "github.com/sirupsen/logrus"
-
-// Logger defines our logger.
-var Logger = logrus.New()
