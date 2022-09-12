@@ -25,6 +25,6 @@ go-pst-export is open-source under the GNU Affero General Public License Version
 
 ## Contact
 
-Feel free to contact me if you have any questions.
-Name: Marten Mooij
+Feel free to contact me if you have any questions.<br/>
+Name: Marten Mooij<br/>
 Email: info@mooijtech.com
